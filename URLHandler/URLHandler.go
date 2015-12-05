@@ -14,7 +14,7 @@ var extras map[string]interface{}
 // call, the URLHandler will handle any requests to that URL by
 // delegating to the method for the appropriate HTTP Method being
 // called.
-
+//
 // All methods receive the http.Request object, and a map of extra
 // parameters that have been registered with RegisterExtraParameter
 type URLHandler interface {
@@ -25,7 +25,7 @@ type URLHandler interface {
 	// Post will handle an HTTP POST request to this URL.
 	// Post returns 2 strings: the content to return, an a redirectURL
 	// If the redirectURL is not the empty string, the registered
-	// URLandler will automatically respond with a 302 return code
+	// URLandler will automatically respond with a 303 return code
 	// instead of a 200 return code, and set an appropriate Location:
 	// response header
 	Post(r *http.Request, params map[string]interface{}) (content, redirectURL string, err error)
