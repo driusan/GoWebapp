@@ -1,8 +1,8 @@
 package main
 
 import (
-	"net/http"
 	"URLHandler"
+	"net/http"
 )
 
 func main() {
