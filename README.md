@@ -35,16 +35,11 @@ func (r SimpleGetPage) Get(req *http.Request, params map[string]interface{}) (st
 	return "Page not found", URLHandler.NotFoundError{}
 
 }
-
-func main() {
-	handle := SimpleGetPage{}
-
-	URLHandler.RegisterHandler(handle, "/")
-	http.ListenAndServe(":8080", nil)
-}
 ```
 
-Finally, the ListApp example in the examples folder shows a more complicated
-application that implements both Get and Post to store/retrieve a list from 
-an SQLite database and demonstrates the RegisterExtraParameter function
->>>>>>> Added README
+A more complicated example is in the [ListApp](examples/ListApp/main) example 
+in the examples folder, which implements a simple application that implements
+both Get and Post to store/retrieve a list from an SQLite database.
+
+It demonstrates the usage of the params parameter to both pass arbitrary data
+to the Get/Post methods (both an SQL driver pointer, and a sample list title).
