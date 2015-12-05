@@ -54,16 +54,24 @@ func (r ListPage) Post(req *http.Request, extraparams map[string]interface{}) (s
 }
 
 func main() {
-	x := ListPage{}
+	// Initialize an sqlite3 database connection
 	db, err := sql.Open("sqlite3", "list.db")
 	defer db.Close()
 	if err != nil {
 		panic("Couldn't open db")
 	}
 
+	// Create a ListPage instance, and register a title
+	// (for fun), and a reference to the database object
+	// (so that our implementation can interact with the DB)
+	x := ListPage{}
 	URLHandler.RegisterExtraParameter("title", "I am a list")
 	URLHandler.RegisterExtraParameter("database", db)
+
+	// Register the ListPage as the handler for the root
 	URLHandler.RegisterHandler(x, "/")
 	fmt.Printf("Listening and serving on port 8080\n")
+
+	// Let Go's http library handle the heavy lifting
 	http.ListenAndServe(":8080", nil)
 }
