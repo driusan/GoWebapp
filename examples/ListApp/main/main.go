@@ -2,10 +2,11 @@ package main
 
 import (
 	"URLHandler"
+	"bytes"
 	"database/sql"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
-	"log"
+	"html/template"
 	"net/http"
 )
 
@@ -15,11 +16,19 @@ type ListPage struct {
 
 func (r ListPage) Get(req *http.Request, extraparams map[string]interface{}) (string, error) {
 	db := extraparams["database"].(*sql.DB)
-	template := "<html><body>"
-	template += "<h3>" + extraparams["title"].(string) + "</h3>"
-	template += "	<form method=\"post\"><ul>"
+	title := extraparams["title"].(string)
 
-	rows, err := db.Query("SELECT Value FROM listitems")
+	type Item struct {
+		ID    int
+		Value string
+	}
+	pageData := struct {
+		Title string
+		Items []Item
+	}{Title: title}
+
+	// Populate the pageData items from the database
+	rows, err := db.Query("SELECT ID, Value FROM listitems")
 	defer rows.Close()
 	if err != nil {
 		return "Error Querying Database", err
@@ -27,27 +36,42 @@ func (r ListPage) Get(req *http.Request, extraparams map[string]interface{}) (st
 
 	for rows.Next() {
 		var value string
-		rows.Scan(&value)
-		template += "<li>" + value + "</li>"
+		var ID int
+		rows.Scan(&ID, &value)
+		i := Item{ID, value}
+		pageData.Items = append(pageData.Items, i)
 	}
-	template += "</ul><input type=\"text\" name=\"input\"/><input type=\"submit\" /></form></body></html>"
 
-	return template, nil
+	// Now render the page template
+	pageTemplate, err := template.ParseFiles("templates/main.html")
+	if err != nil {
+		panic("Couldn't parse template file")
+	}
+
+	// Render the template to a bytes Buffer, so that we can return
+	// the rendered string. We don't have access to the ResponseWriter
+	// here.
+	pageBuffer := new(bytes.Buffer)
+	err = pageTemplate.Execute(pageBuffer, pageData)
+	if err != nil {
+		panic("Could not execute main template")
+	}
+	return pageBuffer.String(), nil
 }
 
 func (r ListPage) Post(req *http.Request, extraparams map[string]interface{}) (string, string, error) {
 	var db = extraparams["database"].(*sql.DB)
 	err := req.ParseForm()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	insert, err := db.Prepare("INSERT INTO listitems (Value) VALUES (?)")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	_, err = insert.Exec(req.PostForm.Get("input"))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return "Data has been inserted", "/", nil
 }
