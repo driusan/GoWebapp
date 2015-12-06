@@ -41,7 +41,6 @@ func (r ListPage) Post(req *http.Request, extraparams map[string]interface{}) (s
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Print(req.PostForm.Get("input"))
 	insert, err := db.Prepare("INSERT INTO listitems (Value) VALUES (?)")
 	if err != nil {
 		log.Fatal(err)
