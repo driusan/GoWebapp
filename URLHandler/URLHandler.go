@@ -108,6 +108,12 @@ func RegisterHandler(h URLHandler, url string) {
 	http.HandleFunc(url, handler)
 }
 
+// RegisterStaticHandler registers directory to be served by the web
+// server on the filesystem without going through the handler function.
+func RegisterStaticHandler(url, directoryRoot string) {
+	http.Handle(url, http.FileServer(http.Dir(directoryRoot)))
+}
+
 // RegisterExtraParameter allows you to add arbitrary data to get
 // passed to the params parameter of URLHandler handler functions which
 // you can retrieve from params[key] (and will need to manually cast to
