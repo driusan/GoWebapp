@@ -76,6 +76,13 @@ func handleError(w http.ResponseWriter, response string, err error) {
 // http.HandleFunc which delegates to the appropriate URLHandler method
 func RegisterHandler(h URLHandler, url string) {
 	var handler = func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if r := recover(); r != nil {
+				w.WriteHeader(500)
+				fmt.Fprintf(w, "Unknown server error")
+			}
+		}()
+
 		if r.Method == "GET" {
 			response, err := h.Get(r, extras)
 			if err != nil {
