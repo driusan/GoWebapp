@@ -39,6 +39,9 @@ type URLHandler interface {
 	Delete(r *http.Request, params map[string]interface{}) (string, error)
 }
 
+// handleClientError takes an error from a URLHandler and returns
+// an appropriate response if it knows how. Returns true if it's been
+// handled, false otherwise
 func handleClientError(w http.ResponseWriter, response string, err error) bool {
 	switch err.(type) {
 	case ForbiddenError:
@@ -57,6 +60,17 @@ func handleClientError(w http.ResponseWriter, response string, err error) bool {
 	return false
 }
 
+// handleError if a helper function to handle errors from URLHandlers.
+// Mostly, it calls handleClientError and then panics if it didn't get
+// handled.
+func handleError(w http.ResponseWriter, response string, err error) {
+	handled := handleClientError(w, response, err)
+	if handled {
+		return
+	}
+	panic("Something happened")
+}
+
 // RegisterHandler takes a URLHandler and a url string and registers
 // that URLHandler to handle that URL. It automatically registers an
 // http.HandleFunc which delegates to the appropriate URLHandler method
@@ -65,23 +79,16 @@ func RegisterHandler(h URLHandler, url string) {
 		if r.Method == "GET" {
 			response, err := h.Get(r, extras)
 			if err != nil {
-				handled := handleClientError(w, response, err)
-				if handled {
-					return
-				}
-				panic("I got an error I didn't understand")
-
+				handleError(w, response, err)
+				return
 			}
 			fmt.Fprintf(w, response)
 		}
 		if r.Method == "POST" {
 			response, redirectURL, err := h.Post(r, extras)
 			if err != nil {
-				handled := handleClientError(w, response, err)
-				if handled {
-					return
-				}
-				panic("I got an error I didn't understand")
+				handleError(w, response, err)
+				return
 			}
 			if redirectURL != "" {
 				w.Header().Add("Location", redirectURL)
