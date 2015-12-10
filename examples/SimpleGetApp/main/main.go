@@ -3,6 +3,7 @@ package main
 import (
 	"URLHandler"
 	"net/http"
+	"net/url"
 )
 
 // Implement a new type which inherits the DefaultHandler
@@ -20,6 +21,16 @@ func (r SimpleGetPage) Get(req *http.Request, params map[string]interface{}) (st
 	return "Page not found", URLHandler.NotFoundError{}
 
 }
+
+// The content on this page is static, so we can just use
+// a constant to represent the ETag of this resource.
+func (r SimpleGetPage) ETag(u *url.URL) URLHandler.ETag {
+	if u.Path == "/" {
+		return "IAMPAGE"
+	}
+	return ""
+}
+
 func main() {
 	handle := SimpleGetPage{}
 

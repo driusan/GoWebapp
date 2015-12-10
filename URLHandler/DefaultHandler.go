@@ -2,6 +2,7 @@ package URLHandler
 
 import (
 	"net/http"
+	"net/url"
 )
 
 // DefaultHandler is an simple implementation of the URLHandler
@@ -22,4 +23,8 @@ func (url DefaultHandler) Put(r *http.Request, params map[string]interface{}) (s
 }
 func (url DefaultHandler) Delete(r *http.Request, params map[string]interface{}) (string, error) {
 	return "Method not implemented", InvalidMethodError{}
+}
+
+func (url DefaultHandler) ETag(r *url.URL) ETag {
+	return ""
 }

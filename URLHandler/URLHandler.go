@@ -3,7 +3,10 @@ package URLHandler
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 )
+
+type ETag string
 
 // A map of extra things to pass to every request handler call
 var extras map[string]interface{}
@@ -37,6 +40,11 @@ type URLHandler interface {
 	// Delete will handle an HTTP PUT request to this URL and return the
 	// content that should be sent to the client
 	Delete(r *http.Request, params map[string]interface{}) (string, error)
+
+	// Calculate an ETag to represent the resource being served by
+	// this handler, so that a registered handler can return a 304
+	// code if the resource hasn't changed.
+	ETag(*url.URL) ETag
 }
 
 // handleClientError takes an error from a URLHandler and returns
@@ -84,6 +92,13 @@ func RegisterHandler(h URLHandler, url string) {
 		}()
 
 		if r.Method == "GET" {
+			if etag := h.ETag(r.URL); etag != "" {
+				w.Header().Add("ETag", string(etag))
+				if string(etag) == r.Header.Get("If-None-Match") {
+					w.WriteHeader(304)
+					return
+				}
+			}
 			response, err := h.Get(r, extras)
 			if err != nil {
 				handleError(w, response, err)
