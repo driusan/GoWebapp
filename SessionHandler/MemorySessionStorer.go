@@ -1,27 +1,24 @@
 package SessionHandler
 
-import "net/http"
-
-type MemorySessionStorer struct {
-	Token    TokenExtractor
+// A MemorySessionStore provides the simplest SessionStore
+// possible. It stores active Tokens to Sessions in memory.
+type MemorySessionStore struct {
 	sessions map[Token]*Session
 }
 
-func (s MemorySessionStorer) AddSession(ses Session) error {
+func (s MemorySessionStore) AddSession(t Token, ses Session) error {
 	if s.sessions == nil {
 		s.sessions = make(map[Token]*Session)
 	}
 
-	token := s.Token.GetToken(ses.request)
-	s.sessions[token] = &ses
+	s.sessions[t] = &ses
 	return nil
 }
 
-func (s MemorySessionStorer) GetSession(r *http.Request) *Session {
+func (s MemorySessionStore) GetSession(t Token) *Session {
 
 	if s.sessions == nil {
 		return nil
 	}
-	token := s.Token.GetToken(r)
-	return s.sessions[token]
+	return s.sessions[t]
 }
