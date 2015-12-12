@@ -79,6 +79,27 @@ func handleError(w http.ResponseWriter, response string, err error) {
 	panic("Something happened")
 }
 
+func enforceIfMatch(success func(*http.Request, map[string]interface{}) (string, error), h URLHandler, w http.ResponseWriter, r *http.Request) {
+
+	etag := h.ETag(r.URL, extras)
+	if etag != "" && r.Header.Get("If-Match") == "" {
+		w.WriteHeader(428)
+		fmt.Fprintf(w, "Must include ETag in If-Match header to ensure resource has not been modified")
+		return
+	}
+	if string(etag) == r.Header.Get("If-Match") {
+		response, err := success(r, extras)
+		if err != nil {
+			handleError(w, response, err)
+			return
+		}
+		fmt.Fprintf(w, response)
+	} else {
+		w.WriteHeader(412)
+		fmt.Fprintf(w, "If-Match header does not match document ETag")
+	}
+}
+
 // RegisterHandler takes a URLHandler and a url string and registers
 // that URLHandler to handle that URL. It automatically registers an
 // http.HandleFunc which delegates to the appropriate URLHandler method
@@ -117,6 +138,10 @@ func RegisterHandler(h URLHandler, url string) {
 				w.WriteHeader(303)
 			}
 			fmt.Fprintf(w, response)
+		case "DELETE":
+			enforceIfMatch(h.Delete, h, w, r)
+		case "PUT":
+			enforceIfMatch(h.Put, h, w, r)
 		default:
 			w.WriteHeader(501)
 
