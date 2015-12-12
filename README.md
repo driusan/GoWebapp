@@ -1,5 +1,4 @@
-# GoWebApp
-
+# GoWebApp [![Build Status](https://travis-ci.org/driusan/GoWebapp.svg?branch=master)](https://travis-ci.org/driusan/GoWebapp)
 GoWebApp is a simple framework for writing web applications in Go.
 
 You simply need to implement the URLHandler interface and register
