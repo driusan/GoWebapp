@@ -1,7 +1,7 @@
 package main
 
 import (
-	"URLHandler"
+	"github.com/driusan/GoWebapp/URLHandler"
 	"bytes"
 	"database/sql"
 	"fmt"

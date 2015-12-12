@@ -1,7 +1,7 @@
 package main
 
 import (
-	"URLHandler"
+	"github.com/driusan/GoWebapp/URLHandler"
 	"net/http"
 	"net/url"
 )

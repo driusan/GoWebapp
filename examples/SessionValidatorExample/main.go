@@ -5,8 +5,8 @@ package main
 //submission), it will pass. Otherwise, it will return a 403 error.
 
 import (
-	"SessionHandler"
-	"URLHandler"
+	"github.com/driusan/GoWebapp/SessionHandler"
+	"github.com/driusan/GoWebapp/URLHandler"
 	"net/http"
 )
 

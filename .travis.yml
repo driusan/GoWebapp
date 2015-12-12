@@ -1,0 +1,14 @@
+language: go
+
+go: 
+   - 1.5
+
+before_install:
+   - go get -v ./...
+
+install:
+   - go build examples/ListApp/*.go
+   - go build examples/NullApp/*.go
+   - go build examples/SessionValidatorExample/*.go
+   - go build examples/SimpleGetApp/*.go
+   - go build examples/StaticServer/*.go
