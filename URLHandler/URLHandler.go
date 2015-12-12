@@ -126,7 +126,7 @@ func RegisterHandler(h URLHandler, url string) {
 // RegisterStaticHandler registers directory to be served by the web
 // server on the filesystem without going through the handler function.
 func RegisterStaticHandler(url, directoryRoot string) {
-	http.Handle(url, http.FileServer(http.Dir(directoryRoot)))
+	http.Handle(url, http.StripPrefix(url, http.FileServer(http.Dir(directoryRoot))))
 }
 
 // RegisterExtraParameter allows you to add arbitrary data to get
