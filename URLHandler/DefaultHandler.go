@@ -25,6 +25,6 @@ func (url DefaultHandler) Delete(r *http.Request, params map[string]interface{})
 	return "Method not implemented", InvalidMethodError{}
 }
 
-func (url DefaultHandler) ETag(r *url.URL) ETag {
+func (url DefaultHandler) ETag(r *url.URL, params map[string]interface{}) ETag {
 	return ""
 }

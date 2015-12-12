@@ -44,7 +44,7 @@ type URLHandler interface {
 	// Calculate an ETag to represent the resource being served by
 	// this handler, so that a registered handler can return a 304
 	// code if the resource hasn't changed.
-	ETag(*url.URL) ETag
+	ETag(*url.URL, map[string]interface{}) ETag
 }
 
 // handleClientError takes an error from a URLHandler and returns
@@ -91,8 +91,9 @@ func RegisterHandler(h URLHandler, url string) {
 			}
 		}()
 
-		if r.Method == "GET" {
-			if etag := h.ETag(r.URL); etag != "" {
+		switch r.Method {
+		case "GET":
+			if etag := h.ETag(r.URL, extras); etag != "" {
 				w.Header().Add("ETag", string(etag))
 				if string(etag) == r.Header.Get("If-None-Match") {
 					w.WriteHeader(304)
@@ -105,8 +106,7 @@ func RegisterHandler(h URLHandler, url string) {
 				return
 			}
 			fmt.Fprintf(w, response)
-		}
-		if r.Method == "POST" {
+		case "POST":
 			response, redirectURL, err := h.Post(r, extras)
 			if err != nil {
 				handleError(w, response, err)
@@ -117,8 +117,10 @@ func RegisterHandler(h URLHandler, url string) {
 				w.WriteHeader(303)
 			}
 			fmt.Fprintf(w, response)
-		}
+		default:
+			w.WriteHeader(501)
 
+		}
 	}
 	http.HandleFunc(url, handler)
 }
