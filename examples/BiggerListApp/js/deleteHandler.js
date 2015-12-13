@@ -1,23 +1,30 @@
 
+function addTag(realxhr, id, data) {
+	var headxhr = new XMLHttpRequest();
+	headxhr.open("HEAD", "/items/" + id);
+	headxhr.onload = function() {
+		if(headxhr.status === 200) {
+			realxhr.setRequestHeader("If-Match", headxhr.getResponseHeader("ETag"));
+		}
+		realxhr.send(data);
+	}
+	headxhr.send()
+}
 function deleteItem(id) {
 	var xhr = new XMLHttpRequest();
 	xhr.open("DELETE", "/items/" + id);
-	//xhr.setRequestHeader("If-Match", "234");
 	xhr.onload = function() {
 		if (xhr.status === 200) {
 			window.location = "/"
-
-			console.log("Deleted " + id);
 		}  else {
 			console.log("Failed to delete " + id);
 		}
 	}
-	xhr.send();
+	addTag(xhr, id);
 }
 function updateItem(id, val) {
 	var xhr = new XMLHttpRequest();
 	xhr.open("PUT", "/items/" + id);
-	//xhr.setRequestHeader("If-Match", "234");
 	xhr.onload = function() {
 		if (xhr.status === 200) {
 			window.location = "/"
@@ -25,5 +32,5 @@ function updateItem(id, val) {
 			console.log("Failed to update" + id);
 		}
 	}
-	xhr.send(val);
+	addTag(xhr, id, val);
 }

@@ -24,11 +24,11 @@ func (r SimpleGetPage) Get(req *http.Request, params map[string]interface{}) (st
 
 // The content on this page is static, so we can just use
 // a constant to represent the ETag of this resource.
-func (r SimpleGetPage) ETag(u *url.URL, params map[string]interface{}) URLHandler.ETag {
+func (r SimpleGetPage) ETag(u *url.URL, params map[string]interface{}) (URLHandler.ETag, error) {
 	if u.Path == "/" {
-		return "IAMPAGE"
+		return "IAMPAGE", nil
 	}
-	return ""
+	return "", URLHandler.NotFoundError{}
 }
 
 func main() {

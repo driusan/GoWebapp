@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/driusan/GoWebapp/URLHandler"
 	"database/sql"
 	"fmt"
+	"github.com/driusan/GoWebapp/URLHandler"
 	_ "github.com/mattn/go-sqlite3"
 	"net/http"
 )

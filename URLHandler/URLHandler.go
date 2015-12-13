@@ -44,7 +44,7 @@ type URLHandler interface {
 	// Calculate an ETag to represent the resource being served by
 	// this handler, so that a registered handler can return a 304
 	// code if the resource hasn't changed.
-	ETag(*url.URL, map[string]interface{}) ETag
+	ETag(*url.URL, map[string]interface{}) (ETag, error)
 }
 
 // handleClientError takes an error from a URLHandler and returns
@@ -85,7 +85,7 @@ func handleError(w http.ResponseWriter, response string, err error) {
 
 func enforceIfMatch(success func(*http.Request, map[string]interface{}) (string, error), h URLHandler, w http.ResponseWriter, r *http.Request) {
 
-	etag := h.ETag(r.URL, extras)
+	etag, _ := h.ETag(r.URL, extras)
 	if etag != "" && r.Header.Get("If-Match") == "" {
 		w.WriteHeader(428)
 		fmt.Fprintf(w, "Must include ETag in If-Match header to ensure resource has not been modified")
@@ -117,8 +117,18 @@ func RegisterHandler(h URLHandler, url string) {
 		}()
 
 		switch r.Method {
+		case "HEAD":
+			etag, err := h.ETag(r.URL, extras)
+			switch err.(type) {
+			case NotFoundError:
+				w.WriteHeader(404)
+				return
+			}
+			if etag != "" {
+				w.Header().Add("ETag", string(etag))
+			}
 		case "GET":
-			if etag := h.ETag(r.URL, extras); etag != "" {
+			if etag, _ := h.ETag(r.URL, extras); etag != "" {
 				w.Header().Add("ETag", string(etag))
 				if string(etag) == r.Header.Get("If-None-Match") {
 					w.WriteHeader(304)

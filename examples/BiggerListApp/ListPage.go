@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/driusan/GoWebapp/URLHandler"
 	"bytes"
 	"database/sql"
+	"github.com/driusan/GoWebapp/URLHandler"
 	"html/template"
 	"net/http"
 )
