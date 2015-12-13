@@ -1,0 +1,27 @@
+<html>
+<head>
+	<title>{{.Title}}</title>
+	<script src="js/deleteHandler.js"></script>
+</head>
+<body>
+	<h3>{{.Title}}</h3>
+	<ul>
+		{{range .Items}}
+		<li>
+		<input type="text" id="item{{ .ID }}" value="{{ .Value }}" />
+			 <button onClick="updateItem('{{ .ID }}', document.getElementById('item{{ .ID }}').value)">Update</button>
+			 <button onClick="deleteItem('{{ .ID }}')">Delete</button>
+		</li>
+		{{else}}
+		<li>No items in list</li>
+		{{end}}
+	</ul>
+	<div>
+		<form method="post" action="/">
+			<label for="input">Value to add</label>
+			<input type="text" name="input" id="input" />
+			<input type="submit" />
+		</form>
+	</div>
+</body>
+</html>

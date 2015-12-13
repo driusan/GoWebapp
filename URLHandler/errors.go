@@ -1,5 +1,10 @@
 package URLHandler
 
+type BadRequestError struct{}
+
+func (r BadRequestError) Error() string {
+	return "400 Bad Request"
+}
 type ForbiddenError struct{}
 
 func (r ForbiddenError) Error() string {

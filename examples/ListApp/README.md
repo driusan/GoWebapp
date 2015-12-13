@@ -12,5 +12,3 @@ go get github.com/mattn/go-sqlite3
 ```
 
 before you can use this 
-
-TODO: Write a ListItem handler which can deal with PUT and DELETE

@@ -12,3 +12,4 @@ install:
    - go build examples/SessionValidatorExample/*.go
    - go build examples/SimpleGetApp/*.go
    - go build examples/StaticServer/*.go
+   - go build examples/BiggerListApp/*.go

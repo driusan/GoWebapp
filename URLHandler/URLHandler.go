@@ -52,6 +52,10 @@ type URLHandler interface {
 // handled, false otherwise
 func handleClientError(w http.ResponseWriter, response string, err error) bool {
 	switch err.(type) {
+	case BadRequestError:
+		w.WriteHeader(400)
+		fmt.Fprintf(w, response)
+		return true
 	case ForbiddenError:
 		w.WriteHeader(403)
 		fmt.Fprintf(w, response)
@@ -87,7 +91,7 @@ func enforceIfMatch(success func(*http.Request, map[string]interface{}) (string,
 		fmt.Fprintf(w, "Must include ETag in If-Match header to ensure resource has not been modified")
 		return
 	}
-	if string(etag) == r.Header.Get("If-Match") {
+	if etag == "" || string(etag) == r.Header.Get("If-Match") {
 		response, err := success(r, extras)
 		if err != nil {
 			handleError(w, response, err)
