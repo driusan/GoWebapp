@@ -2,6 +2,7 @@ package URLHandler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -112,6 +113,7 @@ func RegisterHandler(h URLHandler, url string) {
 		defer func() {
 			if r := recover(); r != nil {
 				w.WriteHeader(500)
+				log.Print(r)
 				fmt.Fprintf(w, "Unknown server error")
 			}
 		}()
