@@ -1,18 +1,24 @@
 package HTMLPageRenderer
 
 import (
+	//	"reflect"
 	"testing"
 )
 
-func TestRender(t *testing.T)  {
-	var pageExample HTMLPage;
+func TestRender(t *testing.T) {
+	var pageExample HTMLPage
+	files := []string{"hello", "abc"}
 	pageExample = Page{
-		[]string{"hello", "abc"},
+		JSFiles: files,
 	}
-	if pageExample.GetJSFiles() != []string{"hello", "abc"} {
-		t.Error("Did not receive expected JSFiles")
-	}
+	/*
+		if reflect.DeepEqual(pageExample.GetJSFiles(), []string{"hello", "abc"}) {
+			t.Error("Did not receive expected JSFiles")
+		}
+	*/
+	_ = Render(pageExample)
 }
+
 /*
 type Page struct {
 	JSFiles []string

@@ -1,9 +1,8 @@
 package HTMLPageRenderer
 
 type HTMLPage interface {
+	GetTitle() string
 	GetJSFiles() []string
 	GetCSSFiles() []string
-
-	Render() string
+	GetBody() string
 }
-
