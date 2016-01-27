@@ -3,7 +3,10 @@ package URLHandler
 import (
 	"net/http"
 	"net/url"
+	"time"
 )
+
+var UnknownMTime time.Time = time.Time{}
 
 // DefaultHandler is an simple implementation of the URLHandler
 // interface that you can compose into your class if you only
@@ -27,4 +30,8 @@ func (url DefaultHandler) Delete(r *http.Request, params map[string]interface{})
 
 func (url DefaultHandler) ETag(r *url.URL, params map[string]interface{}) (ETag, error) {
 	return "", nil
+}
+
+func (url DefaultHandler) LastModified(r *url.URL, params map[string]interface{}) time.Time {
+	return UnknownMTime
 }

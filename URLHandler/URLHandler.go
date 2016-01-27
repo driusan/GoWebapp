@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type ETag string
@@ -46,6 +47,7 @@ type URLHandler interface {
 	// this handler, so that a registered handler can return a 304
 	// code if the resource hasn't changed.
 	ETag(*url.URL, map[string]interface{}) (ETag, error)
+	LastModified(*url.URL, map[string]interface{}) time.Time
 }
 
 // handleClientError takes an error from a URLHandler and returns
@@ -86,7 +88,10 @@ func handleError(w http.ResponseWriter, response string, err error) {
 
 func enforceIfMatch(success func(*http.Request, map[string]interface{}) (string, error), h URLHandler, w http.ResponseWriter, r *http.Request) {
 
-	etag, _ := h.ETag(r.URL, extras)
+	etag, err := h.ETag(r.URL, extras)
+	if err != nil {
+		panic("Could not calculate ETag")
+	}
 	if etag != "" && r.Header.Get("If-Match") == "" {
 		w.WriteHeader(428)
 		fmt.Fprintf(w, "Must include ETag in If-Match header to ensure resource has not been modified")
@@ -97,6 +102,11 @@ func enforceIfMatch(success func(*http.Request, map[string]interface{}) (string,
 		if err != nil {
 			handleError(w, response, err)
 			return
+		}
+		if response == "" {
+			w.WriteHeader(204)
+		} else {
+			w.WriteHeader(200)
 		}
 		fmt.Fprintf(w, response)
 	} else {
@@ -118,6 +128,7 @@ func RegisterHandler(h URLHandler, url string) {
 			}
 		}()
 
+		w.Header().Add("Cache-Control", "public, max-age=0")
 		switch r.Method {
 		case "HEAD":
 			etag, err := h.ETag(r.URL, extras)
@@ -130,13 +141,32 @@ func RegisterHandler(h URLHandler, url string) {
 				w.Header().Add("ETag", string(etag))
 			}
 		case "GET":
+			unmodified := false
+			// First check If-Modified-Since header, since that's
+			// usually cheaper than an ETag
+			if mtime := h.LastModified(r.URL, extras); mtime != UnknownMTime {
+				w.Header().Add("Last-Modified", mtime.UTC().Format(http.TimeFormat))
+				// the If-Modified header is precise to the second, but
+				// mtime is precise to the nano-second, so use mtime+1s
+				// for the check. There's no way built in way to truncate
+				// the sub-second precision for a time.Time value.
+				if ifsince, err := http.ParseTime(r.Header.Get("If-Modified-Since")); err == nil && mtime.Before(ifsince.Add(1*time.Second)) {
+					unmodified = true
+				}
+			}
+			// Check the ETag header and return not modified if it matches
 			if etag, _ := h.ETag(r.URL, extras); etag != "" {
 				w.Header().Add("ETag", string(etag))
 				if string(etag) == r.Header.Get("If-None-Match") {
-					w.WriteHeader(304)
-					return
+					unmodified = true
 				}
 			}
+			if unmodified {
+				w.WriteHeader(304)
+				return
+			}
+			// It's been modified since If-Modified-Since, and doesn't
+			// match the ETag in If-None-Match, so return the value..
 			response, err := h.Get(r, extras)
 			if err != nil {
 				handleError(w, response, err)
